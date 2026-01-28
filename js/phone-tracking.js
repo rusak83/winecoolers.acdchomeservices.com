@@ -90,6 +90,27 @@
     const utm = getUTMParams();
     const brandName = getBrandName();
     const channelName = getChannelName();
+    // Microsoft Ads call click tracking
+    if (window.uetq) {
+      window.uetq = window.uetq || [];
+      window.uetq.push({
+        _c: 97209961,
+        ea: 'call_click',
+        el: formattedPhone,
+        ev: utm.source || 'direct'
+      });
+    }
+
+    // GCLID for call click tracking
+    if (window.dataLayer) {
+      const gclid = new URLSearchParams(window.location.search).get('gclid');
+      window.dataLayer.push({
+        'event': 'call_click',
+        'phone': phone,
+        'gclid': gclid || 'none'
+      });
+    }
+
     document.querySelectorAll('a[href^="tel:"]').forEach(link => {
       link.href = `tel:${phone}`;
       if (link.textContent.match(/[\d\(\)\-\s]+/)) {
