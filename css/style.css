@@ -29,3 +29,33 @@
     box-sizing: border-box;
   }
 }
+/* Mobile H1 wrapping fix */
+h1,
+.hero h1,
+h1.primary-headline {
+  word-break: break-word;
+  word-wrap: break-word;
+  overflow-wrap: break-word;
+  font-size: clamp(1.5rem, 5vw, 2.5rem);
+  line-height: 1.2;
+  max-width: 100%;
+  padding: 0 1rem;
+}
+
+@media (max-width: 768px) {
+  h1,
+  .hero h1,
+  h1.primary-headline {
+    font-size: 1.75rem;
+    line-height: 1.15;
+  }
+}
+
+@media (max-width: 480px) {
+  h1,
+  .hero h1,
+  h1.primary-headline {
+    font-size: 1.5rem;
+    line-height: 1.1;
+  }
+}
