@@ -97,7 +97,8 @@
         _c: 97209961,
         ea: 'call_click',
         el: formattedPhone,
-        ev: utm.source || 'direct'
+        ev: utm.source || 'direct',
+        domain: window.currentDomain || window.location.hostname.split('.')[0]
       });
     }
 

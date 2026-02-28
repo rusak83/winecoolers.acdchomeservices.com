@@ -126,6 +126,34 @@ j=d.createElement(s),dl=l!='dataLayer'?'&l='+l:'';j.async=true;j.src=
             .bg-hero { background-image: none; border: none; }
         }
     </style>
+    <script>
+    var getDomain = function() {
+      var hostname = window.location.hostname;
+      if (hostname.includes('subzero.')) return 'subzero';
+      if (hostname.includes('thermador.')) return 'thermador';
+      if (hostname.includes('kitchenaid.')) return 'kitchenaid';
+      if (hostname.includes('jennair.')) return 'jennair';
+      if (hostname.includes('gemonogram.')) return 'gemonogram';
+      if (hostname.includes('decor.')) return 'decor';
+      if (hostname.includes('icemachines.')) return 'icemachines';
+      if (hostname.includes('winecoolers.')) return 'winecoolers';
+      if (hostname.includes('wolf.')) return 'wolf';
+      return 'main';
+    };
+    var currentDomain = getDomain();
+    window.uetq = window.uetq || [];
+    var originalPush = window.uetq.push;
+    window.uetq.push = function() {
+      var args = Array.prototype.slice.call(arguments);
+      if (args[0] === 'event' || args[0] === 'pageLoad') {
+        var eventAction = args[1];
+        var eventParams = args[2] || {};
+        eventParams['domain'] = currentDomain;
+        args = [args[0], eventAction, eventParams];
+      }
+      return originalPush.apply(window.uetq, args);
+    };
+  </script>
   <!-- Microsoft UET Tag -->
   <script>
     window.uetq = window.uetq || [];

@@ -38,7 +38,35 @@
 <script type="application/ld+json">
 {"@context":"https://schema.org","@type":"BlogPosting","dateModified":"2020-06-17T15:43:48+02:00","datePublished":"2020-06-17T15:43:48+02:00","description":"You’ll find this post in your _posts directory. Go ahead and edit it and re-build the site to see your changes. You can rebuild the site in many different ways, but the most common way is to run jekyll serve, which launches a web server and auto-regenerates your site when a file is updated.","headline":"Welcome to Jekyll!","mainEntityOfPage":{"@type":"WebPage","@id":"http://localhost:4000/jekyll/update/2020/06/17/welcome-to-jekyll.html"},"url":"http://localhost:4000/jekyll/update/2020/06/17/welcome-to-jekyll.html"}</script>
 <!-- End Jekyll SEO tag -->
-<link rel="stylesheet" href="/assets/main.css"><link type="application/atom+xml" rel="alternate" href="http://localhost:4000/feed.xml" title="AC/DC HVAC &amp; Appliance Repair" />  <!-- Microsoft UET Tag -->
+<link rel="stylesheet" href="/assets/main.css"><link type="application/atom+xml" rel="alternate" href="http://localhost:4000/feed.xml" title="AC/DC HVAC &amp; Appliance Repair" />    <script>
+    var getDomain = function() {
+      var hostname = window.location.hostname;
+      if (hostname.includes('subzero.')) return 'subzero';
+      if (hostname.includes('thermador.')) return 'thermador';
+      if (hostname.includes('kitchenaid.')) return 'kitchenaid';
+      if (hostname.includes('jennair.')) return 'jennair';
+      if (hostname.includes('gemonogram.')) return 'gemonogram';
+      if (hostname.includes('decor.')) return 'decor';
+      if (hostname.includes('icemachines.')) return 'icemachines';
+      if (hostname.includes('winecoolers.')) return 'winecoolers';
+      if (hostname.includes('wolf.')) return 'wolf';
+      return 'main';
+    };
+    var currentDomain = getDomain();
+    window.uetq = window.uetq || [];
+    var originalPush = window.uetq.push;
+    window.uetq.push = function() {
+      var args = Array.prototype.slice.call(arguments);
+      if (args[0] === 'event' || args[0] === 'pageLoad') {
+        var eventAction = args[1];
+        var eventParams = args[2] || {};
+        eventParams['domain'] = currentDomain;
+        args = [args[0], eventAction, eventParams];
+      }
+      return originalPush.apply(window.uetq, args);
+    };
+  </script>
+  <!-- Microsoft UET Tag -->
   <script>
     window.uetq = window.uetq || [];
     window.uetq.push('consent', 'default', {'ad_storage': 'granted', 'analytics_storage': 'granted'});
