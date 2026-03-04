@@ -39,6 +39,86 @@ j=d.createElement(s),dl=l!='dataLayer'?'&l='+l:'';j.async=true;j.src=
             }
         }
 
+        .contact-grid{
+            display:grid;
+            grid-template-columns:repeat(2,minmax(0,1fr));
+            gap:32px;
+            margin:32px 0 48px;
+        }
+
+        .contact-card{
+            background:rgba(255,255,255,0.04);
+            border:1px solid rgba(255,255,255,0.1);
+            border-radius:12px;
+            padding:24px;
+        }
+
+        .contact-actions{
+            display:flex;
+            flex-wrap:wrap;
+            gap:16px;
+            margin-top:24px;
+        }
+
+        .contact-btn{
+            display:inline-block;
+            padding:16px 28px;
+            border-radius:8px;
+            font-weight:600;
+            text-decoration:none;
+        }
+
+        .contact-btn--primary{
+            background-color:var(--color-attention);
+            color:#fff;
+        }
+
+        .contact-btn--secondary{
+            border:2px solid #fff;
+            color:#fff;
+        }
+
+        .contact-form{
+            display:grid;
+            gap:16px;
+        }
+
+        .contact-form label{
+            display:block;
+            margin-bottom:6px;
+            color:#fff;
+            font-size:0.95rem;
+        }
+
+        .contact-form input,
+        .contact-form textarea{
+            width:100%;
+            padding:14px 16px;
+            border-radius:8px;
+            border:1px solid rgba(255,255,255,0.2);
+            background:#fff;
+            color:#111827;
+            font:inherit;
+            box-sizing:border-box;
+        }
+
+        .contact-form textarea{
+            min-height:140px;
+            resize:vertical;
+        }
+
+        .contact-form button{
+            width:100%;
+            border:none;
+            cursor:pointer;
+        }
+
+        @media screen and (max-width: 960px){
+            .contact-grid{
+                grid-template-columns:1fr;
+            }
+        }
+
     </style>
     <meta charset="UTF-8">
     <!-- Yandex.Metrika counter -->
@@ -171,16 +251,60 @@ height="0" width="0" style="display:none;visibility:hidden"></iframe></noscript>
         <!-- CONTENT -->
 <section>
     <div class="fixed-width-container">
-        <div class="col-8">
+        <div class="col-12">
             <hr />
-            <p class="big white">
-    Address: 501 Turner Rd # 924, Grapevine TX 76051
-    <br>
-    Phone: <a href="tel:+14697300309" style="color: inherit; text-decoration: none;">+1 (469) 730-0309</a>
-    <br>
-    E-mail: <a href="mailto:support@acdchomeservices.com" style="color: inherit; text-decoration: none;">support@acdchomeservices.com</a>
-</p>
+            <div class="contact-grid">
+                <div class="contact-card">
+                    <h2 class="section-headline white">Contact AC/DC Home Services</h2>
+                    <p class="big white">
+                        Address: 501 Turner Rd # 924, Grapevine TX 76051
+                        <br>
+                        Phone: <a href="tel:+14697300309" style="color: inherit; text-decoration: none;">+1 (469) 730-0309</a>
+                        <br>
+                        E-mail: <a href="mailto:support@acdchomeservices.com" style="color: inherit; text-decoration: none;">support@acdchomeservices.com</a>
+                        <br>
+                        Hours: Mon-Sun, 8:00 AM-8:00 PM
+                    </p>
+                    <p class="big white">Call us for wine cooler emergencies, temperature failures, compressor issues, or same-day scheduling across Dallas-Fort Worth.</p>
+                    <div class="contact-actions">
+                        <a href="tel:+14697300309" class="contact-btn contact-btn--primary">Call (469) 730-0309</a>
+                        <a href="https://book.housecallpro.com/book/ACDC-HVAC--Appliance-Repair/53312602f0a846a9b9e0059cfb118440?v2=true" class="contact-btn contact-btn--secondary" rel="noopener" target="_blank">Book Online</a>
+                    </div>
+                </div>
+
+                <div class="contact-card">
+                    <h2 class="section-headline white">Request Service</h2>
+                    <p class="big white">Leave your contact details and a short note about the wine cooler problem. The request will be sent to our support inbox.</p>
+                    <form class="contact-form" action="https://formsubmit.co/support@acdchomeservices.com" method="POST">
+                        <input type="hidden" name="_subject" value="Wine Coolers Website Contact Form">
+                        <input type="hidden" name="_captcha" value="false">
+                        <input type="hidden" name="_next" value="https://winecoolers.acdchomeservices.com/contacts/">
+
+                        <div>
+                            <label for="contact-name">Name</label>
+                            <input id="contact-name" name="name" type="text" required>
+                        </div>
+
+                        <div>
+                            <label for="contact-phone">Phone</label>
+                            <input id="contact-phone" name="phone" type="tel" required>
+                        </div>
+
+                        <div>
+                            <label for="contact-email">E-mail</label>
+                            <input id="contact-email" name="email" type="email" required>
+                        </div>
+
+                        <div>
+                            <label for="contact-message">How can we help?</label>
+                            <textarea id="contact-message" name="message" placeholder="Describe the wine cooler issue, brand, model, error code, or service address." required></textarea>
+                        </div>
+
+                        <button type="submit" class="contact-btn contact-btn--primary">Send Request</button>
+                    </form>
+                </div>
             </div>
+        </div>
         </div>
     </div>
 </section>
@@ -221,7 +345,7 @@ height="0" width="0" style="display:none;visibility:hidden"></iframe></noscript>
                     <br />
                     Phone: (469) 730-0309
                     <br />
-                    E-mail: office@acdchomeservices.com
+                    E-mail: support@acdchomeservices.com
                     
                 </p>
         </div>
