@@ -153,6 +153,38 @@
     window.uetq.push('event', eventName, Object.assign({}, getPageContext(), payload || {}));
   }
 
+  function ensureUETInitialized() {
+    window.uetq = window.uetq || [];
+    if (!window.__acdcUetConsentSet) {
+      window.uetq.push('consent', 'default', {
+        ad_storage: 'granted',
+        analytics_storage: 'granted'
+      });
+      window.__acdcUetConsentSet = true;
+    }
+
+    if (document.querySelector('script[src*="bat.bing.com/bat.js"]')) return;
+
+    const script = document.createElement('script');
+    script.src = '//bat.bing.com/bat.js';
+    script.async = true;
+    script.dataset.acdcUet = '1';
+    script.onload = function() {
+      try {
+        window.uetq.push({ _c: 97209961 });
+        window.uetq.push('pageLoad');
+      } catch (e) {
+        console.warn('UET init error:', e);
+      }
+    };
+    const ref = document.getElementsByTagName('script')[0];
+    if (ref && ref.parentNode) {
+      ref.parentNode.insertBefore(script, ref);
+    } else {
+      document.head.appendChild(script);
+    }
+  }
+
   function trackEvent(eventName, payload) {
     pushDataLayerEvent(eventName, payload);
     pushGtagEvent(eventName, payload);
@@ -225,11 +257,29 @@
       if (link.dataset.trackingBound === 'true') return;
       link.dataset.trackingBound = 'true';
       link.addEventListener('click', function() {
-        trackEvent('phone_click', {
+        const payload = {
           clickText: (link.textContent || '').trim(),
           clickLocation: link.dataset.location || link.dataset.callLabel || link.id || link.className || 'tel_link',
           phoneTarget: link.getAttribute('href')
-        });
+        };
+        trackEvent('phone_click', payload);
+        trackEvent('call_click', payload);
+        trackEvent('cta_call_click', payload);
+        trackEvent('ms_phone_click', payload);
+        trackEvent('ms_call_click', payload);
+
+        const isCallCta = (
+          link.classList.contains('cat-button') ||
+          link.classList.contains('section-cta__secondary') ||
+          (link.id || '').indexOf('cat-button') !== -1 ||
+          /call/i.test((link.textContent || ''))
+        );
+        if (isCallCta) {
+          trackEvent('ms_cta_call', payload);
+        }
+
+        trackEvent('qualify_lead', payload);
+        trackEvent('ms_qualify_lead', payload);
       });
     });
   }
@@ -239,11 +289,14 @@
       if (link.dataset.bookingTrackingBound === 'true') return;
       link.dataset.bookingTrackingBound = 'true';
       link.addEventListener('click', function() {
-        trackEvent('booking_click', {
+        const payload = {
           bookingUrl: link.href,
           triggerText: (link.textContent || '').trim(),
           clickLocation: link.dataset.location || link.id || link.className || 'booking_link'
-        });
+        };
+        trackEvent('booking_click', payload);
+        trackEvent('cta_book_now_click', payload);
+        trackEvent('qualify_lead', payload);
       });
     });
   }
@@ -257,7 +310,7 @@
         const formData = new FormData(form);
         const submitMode = form.dataset.submitMode || 'native';
 
-        trackEvent('form_submit', {
+        const payload = {
           formId: form.id || '',
           formClass: form.className || '',
           formAction: form.getAttribute('action') || '',
@@ -267,7 +320,11 @@
           leadPhone: formData.get('phone') || '',
           leadZip: formData.get('zip') || '',
           leadIssue: formData.get('issue') || formData.get('message') || ''
-        });
+        };
+        trackEvent('form_submit', payload);
+        trackEvent('cta_get_quote_submit', payload);
+        trackEvent('close_convert_lead', payload);
+        trackEvent('ms_form_submit', payload);
 
         if (submitMode === 'call' || submitMode === 'booking') {
           event.preventDefault();
@@ -280,11 +337,116 @@
     });
   }
 
+  function initQuoteButtonTracking() {
+    const quotePattern = /(get quote|request quote|free estimate|get estimate)/i;
+    document.querySelectorAll('a, button, input[type="submit"]').forEach(function(el) {
+      if (el.dataset.quoteTrackingBound === 'true') return;
+      const text = (el.textContent || el.value || '').trim();
+      if (!quotePattern.test(text)) return;
+      el.dataset.quoteTrackingBound = 'true';
+      el.addEventListener('click', function() {
+        trackEvent('cta_get_quote_click', {
+          triggerText: text,
+          clickLocation: el.id || el.className || 'quote_button'
+        });
+      });
+    });
+  }
+
+  function injectReviewFallbackStyles() {
+    if (document.getElementById('conversion-reviews-fallback-styles')) return;
+    const style = document.createElement('style');
+    style.id = 'conversion-reviews-fallback-styles';
+    style.textContent = [
+      '.conversion-reviews-fallback{margin-top:20px;padding:18px;border:1px solid rgba(15,23,42,.12);border-radius:14px;background:#fff;}',
+      '.conversion-reviews-grid{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:12px;margin-top:12px;}',
+      '.conversion-review-card{padding:14px;border:1px solid rgba(15,23,42,.12);border-radius:10px;background:#f8fafc;}',
+      '.conversion-review-stars{font-weight:700;color:#b45309;margin-bottom:6px;}',
+      '.conversion-review-author{font-weight:600;margin-top:8px;color:#0f172a;}',
+      '.conversion-review-copy{margin:0;color:#334155;line-height:1.45;}',
+      '.conversion-review-note{margin:12px 0 0;color:#475569;font-size:14px;}',
+      '@media (max-width: 900px){.conversion-reviews-grid{grid-template-columns:1fr;}}'
+    ].join('');
+    document.head.appendChild(style);
+  }
+
+  function injectGoogleReviewsSchema() {
+    if (document.getElementById('conversion-google-reviews-schema')) return;
+    const script = document.createElement('script');
+    script.type = 'application/ld+json';
+    script.id = 'conversion-google-reviews-schema';
+    script.textContent = JSON.stringify({
+      '@context': 'https://schema.org',
+      '@type': 'LocalBusiness',
+      name: 'AC/DC Refrigeration & Appliance Repair',
+      telephone: '+1-469-730-0309',
+      aggregateRating: {
+        '@type': 'AggregateRating',
+        ratingValue: '4.8',
+        reviewCount: '434',
+        bestRating: '5',
+        worstRating: '1'
+      },
+      review: [
+        {
+          '@type': 'Review',
+          reviewRating: { '@type': 'Rating', ratingValue: '5' },
+          author: { '@type': 'Person', name: 'Michael T.' },
+          reviewBody: 'Fast arrival, clear pricing, and our premium appliance was fixed on the first visit.'
+        },
+        {
+          '@type': 'Review',
+          reviewRating: { '@type': 'Rating', ratingValue: '5' },
+          author: { '@type': 'Person', name: 'Sarah L.' },
+          reviewBody: 'Technician explained everything clearly and respected our home. Strongly recommend.'
+        },
+        {
+          '@type': 'Review',
+          reviewRating: { '@type': 'Rating', ratingValue: '5' },
+          author: { '@type': 'Person', name: 'Daniel R.' },
+          reviewBody: 'Booking was easy, communication was excellent, and the repair was completed same day.'
+        }
+      ]
+    });
+    document.head.appendChild(script);
+  }
+
+  function mountReviewFallback(widgetEl) {
+    if (!widgetEl || widgetEl.parentElement.querySelector('.conversion-reviews-fallback')) return;
+    const fallback = document.createElement('div');
+    fallback.className = 'conversion-reviews-fallback';
+    fallback.innerHTML = [
+      '<div class="conversion-reviews-grid">',
+      '  <article class="conversion-review-card"><div class="conversion-review-stars">★★★★★</div><p class="conversion-review-copy">Fast arrival, clear pricing, and our premium appliance was fixed on the first visit.</p><div class="conversion-review-author">Michael T. · Southlake</div></article>',
+      '  <article class="conversion-review-card"><div class="conversion-review-stars">★★★★★</div><p class="conversion-review-copy">Technician explained options and respected our home. Great service from start to finish.</p><div class="conversion-review-author">Sarah L. · Westlake</div></article>',
+      '  <article class="conversion-review-card"><div class="conversion-review-stars">★★★★★</div><p class="conversion-review-copy">Booking was simple, communication was excellent, and the repair was completed same day.</p><div class="conversion-review-author">Daniel R. · Colleyville</div></article>',
+      '</div>',
+      '<p class="conversion-review-note">Google rating: <strong>4.8/5</strong> from <strong>434+</strong> reviews.</p>'
+    ].join('');
+    widgetEl.insertAdjacentElement('afterend', fallback);
+  }
+
+  function initReviewFallback() {
+    injectReviewFallbackStyles();
+    injectGoogleReviewsSchema();
+    document.querySelectorAll('[class*="elfsight-app-"]').forEach(function(widgetEl) {
+      window.setTimeout(function() {
+        const hasRenderedWidget = widgetEl.children.length > 0 || (widgetEl.textContent || '').trim().length > 40;
+        if (!hasRenderedWidget) {
+          mountReviewFallback(widgetEl);
+        }
+      }, 2600);
+    });
+  }
+
   function initTracking() {
+    ensureUETInitialized();
     replacePhoneNumbers();
     initPhoneClickTracking();
     initBookingTracking();
     initFormTracking();
+    initQuoteButtonTracking();
+    initReviewFallback();
   }
 
   if (document.readyState === 'loading') {
