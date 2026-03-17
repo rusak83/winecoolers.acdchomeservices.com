@@ -34,6 +34,27 @@
     return 'AC/DC';
   }
 
+  function getBrandCode(element) {
+    if (element && typeof element.getAttribute === 'function') {
+      const attr = (element.getAttribute('data-brand') || '').trim().toLowerCase();
+      if (attr) return attr.replace(/[\s-]+/g, '_');
+    }
+
+    const hostname = window.location.hostname.toLowerCase();
+    if (hostname.includes('viking')) return 'viking';
+    if (hostname.includes('subzero') || hostname.includes('sub-zero')) return 'subzero';
+    if (hostname.includes('jennair')) return 'jennair';
+    if (hostname.includes('thermador')) return 'thermador';
+    if (hostname.includes('wolf')) return 'wolf';
+    if (hostname.includes('kitchenaid')) return 'kitchenaid';
+    if (hostname.includes('gemonogram') || hostname.includes('ge-monogram')) return 'ge_monogram';
+    if (hostname.includes('winecooler') || hostname.includes('wine-cooler') || hostname.includes('winecoolers')) return 'wine_cooler';
+    if (hostname.includes('decor') || hostname.includes('dacor')) return 'dacor';
+    if (hostname.includes('icemachines') || hostname.includes('ice-machine')) return 'ice_machines';
+    if (hostname.includes('commercialfridge') || hostname.includes('commercial')) return 'commercial_fridge';
+    return 'unknown';
+  }
+
   function getUTMParams() {
     const urlParams = new URLSearchParams(window.location.search);
     return {
@@ -257,10 +278,14 @@
       if (link.dataset.trackingBound === 'true') return;
       link.dataset.trackingBound = 'true';
       link.addEventListener('click', function() {
+        const brand = getBrandCode(link);
         const payload = {
           clickText: (link.textContent || '').trim(),
           clickLocation: link.dataset.location || link.dataset.callLabel || link.id || link.className || 'tel_link',
-          phoneTarget: link.getAttribute('href')
+          phoneTarget: link.getAttribute('href'),
+          event_category: 'phone_call',
+          event_label: brand,
+          event_value: 1
         };
         trackEvent('phone_click', payload);
         trackEvent('call_click', payload);
@@ -280,6 +305,7 @@
 
         trackEvent('qualify_lead', payload);
         trackEvent('ms_qualify_lead', payload);
+        trackEvent(brand + '_phone_call', payload);
       });
     });
   }
@@ -309,6 +335,7 @@
       form.addEventListener('submit', function(event) {
         const formData = new FormData(form);
         const submitMode = form.dataset.submitMode || 'native';
+        const brand = getBrandCode(form);
 
         const payload = {
           formId: form.id || '',
@@ -319,7 +346,10 @@
           leadName: formData.get('name') || '',
           leadPhone: formData.get('phone') || '',
           leadZip: formData.get('zip') || '',
-          leadIssue: formData.get('issue') || formData.get('message') || ''
+          leadIssue: formData.get('issue') || formData.get('message') || '',
+          event_category: 'lead_form',
+          event_label: brand,
+          event_value: 1
         };
         trackEvent('form_submit', payload);
         trackEvent('cta_get_quote_submit', payload);
