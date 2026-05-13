@@ -206,6 +206,20 @@
     }
   }
 
+  function getDedupStore() {
+    window.__acdcConversionDeduper = window.__acdcConversionDeduper || {};
+    return window.__acdcConversionDeduper;
+  }
+
+  function shouldTrackConversion(dedupeKey, ttlMs) {
+    const store = getDedupStore();
+    const now = Date.now();
+    const lastSeen = store[dedupeKey] || 0;
+    if (now - lastSeen < ttlMs) return false;
+    store[dedupeKey] = now;
+    return true;
+  }
+
   function trackEvent(eventName, payload) {
     pushDataLayerEvent(eventName, payload);
     pushGtagEvent(eventName, payload);
@@ -287,25 +301,11 @@
           event_label: brand,
           event_value: 1
         };
+        const dedupeKey = ['call_click', window.location.pathname, payload.phoneTarget, payload.clickLocation].join('|');
+        if (!shouldTrackConversion(dedupeKey, 1200)) return;
+
         trackEvent('phone_click', payload);
         trackEvent('call_click', payload);
-        trackEvent('cta_call_click', payload);
-        trackEvent('ms_phone_click', payload);
-        trackEvent('ms_call_click', payload);
-
-        const isCallCta = (
-          link.classList.contains('cat-button') ||
-          link.classList.contains('section-cta__secondary') ||
-          (link.id || '').indexOf('cat-button') !== -1 ||
-          /call/i.test((link.textContent || ''))
-        );
-        if (isCallCta) {
-          trackEvent('ms_cta_call', payload);
-        }
-
-        trackEvent('qualify_lead', payload);
-        trackEvent('ms_qualify_lead', payload);
-        trackEvent(brand + '_phone_call', payload);
       });
     });
   }
@@ -320,9 +320,9 @@
           triggerText: (link.textContent || '').trim(),
           clickLocation: link.dataset.location || link.id || link.className || 'booking_link'
         };
+        const dedupeKey = ['booking_click', window.location.pathname, payload.bookingUrl, payload.clickLocation].join('|');
+        if (!shouldTrackConversion(dedupeKey, 1200)) return;
         trackEvent('booking_click', payload);
-        trackEvent('cta_book_now_click', payload);
-        trackEvent('qualify_lead', payload);
       });
     });
   }
@@ -351,10 +351,10 @@
           event_label: brand,
           event_value: 1
         };
-        trackEvent('form_submit', payload);
-        trackEvent('cta_get_quote_submit', payload);
-        trackEvent('close_convert_lead', payload);
-        trackEvent('ms_form_submit', payload);
+        const dedupeKey = ['form_submit', window.location.pathname, payload.formId, payload.formAction, submitMode].join('|');
+        if (shouldTrackConversion(dedupeKey, 1200)) {
+          trackEvent('form_submit', payload);
+        }
 
         if (submitMode === 'call' || submitMode === 'booking') {
           event.preventDefault();
